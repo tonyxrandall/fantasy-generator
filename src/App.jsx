@@ -41,7 +41,7 @@ export default function App() {
   useEffect(() => {
     async function loadNames() {
       try {
-        const res = await fetch("/names-extra.txt");
+        const res = await fetch("/names_extra.txt");
         const text = await res.text();
         const lines = text.split(/\r?\n/).map((l) => l.trim());
         const parsed = {};
@@ -64,7 +64,7 @@ export default function App() {
         console.log("✅ Loaded name categories:", Object.keys(parsed));
         setNamesData(parsed);
       } catch (e) {
-        console.error("Error loading names-extra.txt", e);
+        console.error("Error loading names_extra.txt", e);
       }
     }
 

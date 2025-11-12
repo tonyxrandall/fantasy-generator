@@ -1,41 +1,154 @@
 import React, { useState, useEffect } from "react";
 import "./styles.css";
 
-// Fallback Kit component (avoids missing import issues)
-const Kit = ({ title, children }) => (
-  <div className="kit-section p-4 m-4 bg-white/10 rounded-xl border border-white/20">
-    <h2 className="text-xl font-semibold mb-2">{title}</h2>
-    <div>{children}</div>
-  </div>
-);
+/* -----------------------------
+   🧠 Data Sets
+----------------------------- */
 
-// Fallback job and location data
-const fallbackJobs = [
-  "Scholar",
-  "Merchant",
-  "Hunter",
-  "Healer",
-  "Blacksmith",
-  "Sailor",
-  "Soldier",
-  "Thief",
-  "Bard",
-  "Alchemist",
+// Fantasy races
+const RACES = [
+  "Human",
+  "Elf",
+  "Dwarf",
+  "Halfling",
+  "Gnome",
+  "Orc",
+  "Half-Orc",
+  "Dragonborn",
+  "Tiefling",
+  "Tabaxi",
+  "Half-Elf",
 ];
-const fallbackLocations = [
+
+// Genders
+const GENDERS = ["Masculine", "Feminine", "Neutral"];
+
+// Professions / jobs
+const JOBS = [
+  "Scholar",
+  "Cartographer",
+  "Blacksmith",
+  "Tavern Keeper",
+  "Merchant",
+  "Soldier",
+  "Wizard",
+  "Priest",
+  "Hunter",
+  "Sailor",
+  "Bard",
+  "Rogue",
+  "Paladin",
+  "Farmer",
+  "Alchemist",
+  "Smith",
+  "Adventurer",
+  "Beggar",
+  "Healer",
+  "Ranger",
+  "Guard",
+  "King",
+  "Queen",
+  "Knight",
+  "Assassin",
+  "Druid",
+  "Monk",
+  "Seer",
+  "Craftsman",
+];
+
+// Locations (base + generated remix)
+const BASE_LOCATIONS = [
   "Caer Mona",
   "Bleakmoor River",
+  "The Celestial Vale",
   "Brigands Forest",
   "The Bronze March",
-  "The Celestial Vale",
+  "Brinevriand",
+  "The Glass Sea",
+  "The Ironwood Forest",
+  "The Vale of Song",
+  "The Tower of Vacal the Bloody",
+  "The Barrier Peaks",
+  "The Shadow Village",
 ];
 
-// Utility helpers
-function choice(arr) {
-  return arr[Math.floor(Math.random() * arr.length)];
-}
-function remixLocations(base, n = 50) {
-  const words = base.flatMap(x => x.split(" "));
+// First name fragments
+const FIRST_PARTS = [
+  "Aer",
+  "Ael",
+  "Bel",
+  "Cal",
+  "Dra",
+  "El",
+  "Fen",
+  "Gal",
+  "Hal",
+  "Ith",
+  "Jor",
+  "Kael",
+  "Lor",
+  "Mal",
+  "Nor",
+  "Or",
+  "Pyra",
+  "Qua",
+  "Ryn",
+  "Syl",
+  "Tor",
+  "Vael",
+  "Xan",
+  "Yor",
+  "Zan",
+];
+const LAST_PARTS = [
+  "dor",
+  "thas",
+  "wyn",
+  "ric",
+  "dil",
+  "mir",
+  "on",
+  "ar",
+  "iel",
+  "or",
+  "drin",
+  "var",
+  "aen",
+  "is",
+  "en",
+  "oth",
+  "el",
+  "ros",
+  "vin",
+  "ra",
+  "ia",
+  "ias",
+];
+
+// Epithets
+const EPITHETS = [
+  "the Bold",
+  "the Silent",
+  "the Wanderer",
+  "the Flameborn",
+  "of the North",
+  "of the Vale",
+  "the Shadowed",
+  "the Wise",
+  "the Red",
+  "the Trickster",
+  "the Stormborn",
+  "of the Coast",
+];
+
+/* -----------------------------
+   🎲 Helper Functions
+----------------------------- */
+
+const choice = (arr) => arr[Math.floor(Math.random() * arr.length)];
+
+function remixLocations(base, n = 80) {
+  const words = base.flatMap((x) => x.split(" "));
   const out = [];
   for (let i = 0; i < n; i++) {
     out.push(
@@ -44,73 +157,140 @@ function remixLocations(base, n = 50) {
         .trim()
     );
   }
-  return out;
+  return Array.from(new Set(out));
 }
 
+function generateName() {
+  return (
+    choice(FIRST_PARTS) +
+    choice(LAST_PARTS) +
+    (Math.random() > 0.75 ? " " + choice(EPITHETS) : "")
+  );
+}
+
+/* -----------------------------
+   🧩 Components
+----------------------------- */
+
+const Card = ({ name, race, gender, job, location }) => (
+  <div className="p-4 bg-white/10 border border-white/20 rounded-xl hover:bg-white/20 transition">
+    <div className="text-xl font-semibold">{name}</div>
+    <div className="text-sm opacity-80">
+      {race} • {gender} • {job}
+    </div>
+    <div className="text-xs opacity-60 mt-1 italic">{location}</div>
+  </div>
+);
+
+/* -----------------------------
+   🌍 Main App Component
+----------------------------- */
+
 export default function App() {
-  const [jobs, setJobs] = useState(fallbackJobs);
-  const [locations, setLocations] = useState(fallbackLocations);
-  const [generated, setGenerated] = useState([]);
+  const [npcs, setNpcs] = useState([]);
+  const [count, setCount] = useState(10);
+  const [locations, setLocations] = useState(remixLocations(BASE_LOCATIONS));
+  const [query, setQuery] = useState("");
+  const [showSettings, setShowSettings] = useState(false);
 
-  useEffect(() => {
-    // Try loading jobs.json and locations.base.json if available
-    const loadData = async () => {
-      try {
-        const j = await fetch("/data/jobs.json");
-        if (j.ok) setJobs(await j.json());
-      } catch (err) {
-        console.warn("Using fallback jobs");
-      }
-      try {
-        const l = await fetch("/data/locations.base.json");
-        if (l.ok) setLocations(await l.json());
-      } catch (err) {
-        console.warn("Using fallback locations");
-      }
-    };
-    loadData();
-  }, []);
-
-  const generateNames = () => {
-    const out = [];
-    for (let i = 0; i < 10; i++) {
-      out.push(
-        `${choice(["Aeron", "Lira", "Thane", "Seren", "Galen", "Kael", "Mira", "Ryn", "Thalia", "Orin"])} of ${choice(remixLocations(locations, 100))} the ${choice(jobs)}`
-      );
+  const generateNPCs = () => {
+    const arr = [];
+    for (let i = 0; i < count; i++) {
+      arr.push({
+        name: generateName(),
+        race: choice(RACES),
+        gender: choice(GENDERS),
+        job: choice(JOBS),
+        location: choice(locations),
+      });
     }
-    setGenerated(out);
+    setNpcs(arr);
   };
 
+  useEffect(() => {
+    generateNPCs(); // Auto-generate on load
+  }, []);
+
+  const filtered = npcs.filter((n) =>
+    Object.values(n).some((v) =>
+      String(v).toLowerCase().includes(query.toLowerCase())
+    )
+  );
+
   return (
-    <div className="min-h-screen bg-blue-900 text-white flex flex-col items-center p-6">
-      <h1 className="text-3xl font-bold mt-6">Fantasy Generator</h1>
-      <p className="opacity-80 mb-4">Names, jobs, and locations for your world</p>
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900 text-white flex flex-col items-center">
+      <header className="w-full border-b border-white/10 py-4 px-6 flex flex-col sm:flex-row gap-3 sm:items-center max-w-6xl">
+        <h1 className="text-3xl font-bold tracking-tight">🧙 Fantasy Generator</h1>
+        <div className="ml-auto flex gap-2">
+          <button
+            onClick={generateNPCs}
+            className="px-3 py-1 bg-indigo-600 hover:bg-indigo-500 rounded-lg text-sm"
+          >
+            Generate
+          </button>
+          <button
+            onClick={() => setShowSettings(!showSettings)}
+            className="px-3 py-1 bg-slate-800 hover:bg-slate-700 rounded-lg text-sm"
+          >
+            {showSettings ? "Hide Settings" : "Settings"}
+          </button>
+        </div>
+      </header>
 
-      <Kit title="Generate NPCs">
-        <button
-          onClick={generateNames}
-          className="px-4 py-2 bg-indigo-600 rounded-lg hover:bg-indigo-700 transition"
-        >
-          Generate
-        </button>
+      {showSettings && (
+        <div className="w-full max-w-6xl bg-white/10 border border-white/20 rounded-xl mt-4 p-4 text-sm">
+          <label className="block mb-2">
+            <span>NPC Count:</span>
+            <input
+              type="number"
+              value={count}
+              min="1"
+              max="100"
+              onChange={(e) => setCount(parseInt(e.target.value || "1", 10))}
+              className="ml-2 bg-slate-800 border border-slate-700 rounded px-2 py-1 w-20 text-white"
+            />
+          </label>
+          <button
+            onClick={() => setLocations(remixLocations(BASE_LOCATIONS))}
+            className="px-3 py-1 bg-slate-700 rounded-lg hover:bg-slate-600"
+          >
+            Refresh Locations
+          </button>
+        </div>
+      )}
 
-        <ul className="mt-4 space-y-1">
-          {generated.length > 0 ? (
-            generated.map((g, i) => (
-              <li key={i} className="bg-white/10 px-3 py-2 rounded-md">
-                {g}
-              </li>
-            ))
-          ) : (
-            <li className="opacity-70 italic">Click “Generate” to create NPCs</li>
-          )}
-        </ul>
-      </Kit>
+      <main className="w-full max-w-6xl px-6 py-8 flex-1">
+        <div className="flex flex-col sm:flex-row gap-2 mb-4">
+          <input
+            placeholder="Search (e.g. Elf, Bard, River)"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            className="flex-1 bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm"
+          />
+          <button
+            onClick={() => setQuery("")}
+            className="px-3 py-2 bg-slate-700 hover:bg-slate-600 rounded-lg text-sm"
+          >
+            Clear
+          </button>
+        </div>
 
-      <footer className="mt-auto mb-4 opacity-60 text-sm">
-        © {new Date().getFullYear()} Fantasy Generator by You
+        {filtered.length > 0 ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {filtered.map((npc, i) => (
+              <Card key={i} {...npc} />
+            ))}
+          </div>
+        ) : (
+          <div className="opacity-70 italic text-center mt-10">
+            No results found. Try different filters.
+          </div>
+        )}
+      </main>
+
+      <footer className="text-xs opacity-60 py-4">
+        Built with ❤️ for worldbuilders and DMs.
       </footer>
     </div>
   );
 }
-

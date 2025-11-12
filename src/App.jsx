@@ -37,12 +37,12 @@ export default function App() {
 
   const randomItem = (arr) => arr[Math.floor(Math.random() * arr.length)];
 
-  // Load your massive names-extra file
+  // Load your massive names_extra file
   useEffect(() => {
     async function loadNames() {
       try {
-        // This assumes you placed names-extra.txt in /public or /src/data
-        const res = await fetch("/names-extra.txt");
+        // This assumes you placed names_extra.txt in /public or /src/data
+        const res = await fetch("/names_extra.txt");
         const text = await res.text();
 
         // Convert simple structured lists into usable JSON
@@ -60,7 +60,7 @@ export default function App() {
 
         setNamesData(parsed);
       } catch (e) {
-        console.error("Error loading names-extra.txt", e);
+        console.error("Error loading names_extra.txt", e);
       }
     }
 

@@ -1,7 +1,7 @@
 {
   "name": "fantasy-generator-spa",
   "version": "1.0.0",
-  "homepage": "https://<YOUR_USERNAME>.github.io/fantasy-generator",
+  "homepage": "https://tonyxrandall.github.io/fantasy-generator",
   "scripts": {
     "dev": "vite",
     "build": "vite build",

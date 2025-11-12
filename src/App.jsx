@@ -37,30 +37,34 @@ export default function App() {
 
   const randomItem = (arr) => arr[Math.floor(Math.random() * arr.length)];
 
-  // Load your massive names_extra file
+  // Load file dynamically
   useEffect(() => {
     async function loadNames() {
       try {
-        // This assumes you placed names_extra.txt in /public or /src/data
-        const res = await fetch("/names_extra.txt");
+        const res = await fetch("/names-extra.txt");
         const text = await res.text();
-
-        // Convert simple structured lists into usable JSON
-        const sections = text.split(/\n\s*\n/); // separate blocks
+        const lines = text.split(/\r?\n/).map((l) => l.trim());
         const parsed = {};
-
         let currentKey = "";
-        for (const section of sections) {
-          const lines = section.split("\n").filter((l) => l.trim());
-          if (lines.length === 0) continue;
-          const header = lines[0].replace(/[:.]/g, "").trim();
-          const body = lines.slice(1).join(" ").split(/[,;]/).map((n) => n.trim());
-          parsed[header] = body.filter((n) => n.length);
+
+        for (const line of lines) {
+          if (!line) continue;
+
+          // Detect headers (lines with uppercase + punctuation)
+          if (/^[A-Z][A-Z\s\-`']+/.test(line)) {
+            currentKey = line.replace(/[:.]/g, "").trim();
+            parsed[currentKey] = [];
+          } else if (currentKey) {
+            // Split comma-separated lists
+            const names = line.split(/[,;]/).map((n) => n.trim());
+            parsed[currentKey].push(...names.filter(Boolean));
+          }
         }
 
+        console.log("✅ Loaded name categories:", Object.keys(parsed));
         setNamesData(parsed);
       } catch (e) {
-        console.error("Error loading names_extra.txt", e);
+        console.error("Error loading names-extra.txt", e);
       }
     }
 
@@ -69,66 +73,73 @@ export default function App() {
 
   const generateName = () => {
     if (!namesData) {
-      setGeneratedName("Loading names...");
+      setGeneratedName("Loading name data...");
       return;
     }
 
     let first = "";
     let last = "";
 
-    // === RACE-SPECIFIC RULES ===
+    // === Race-specific logic ===
+    const getList = (key) =>
+      Object.keys(namesData).find(
+        (k) => k.toLowerCase().includes(key.toLowerCase())
+      );
+
     switch (race) {
-      case "Elf":
-        first = randomItem(namesData["ELF NAMES MALE"].concat(namesData["ELF NAMES FEMALE"]));
-        last = randomItem(namesData["ELF FAMILY NAMES"]);
+      case "Elf": {
+        const male = getList("ELF NAMES MALE");
+        const female = getList("ELF NAMES FEMALE");
+        const family = getList("ELF FAMILY NAMES");
+        first = randomItem(
+          gender === "Male"
+            ? namesData[male] || []
+            : namesData[female] || []
+        );
+        last = randomItem(namesData[family] || []);
         break;
-      case "Dwarf":
-        first = randomItem(namesData["DWARF NAMES MALE"].concat(namesData["DWARF NAMES FEMALE"]));
-        last = randomItem(namesData["DWARF CLAN NAMES"]);
+      }
+      case "Dwarf": {
+        const male = getList("DWARF NAMES MALE");
+        const female = getList("DWARF NAMES FEMALE");
+        const clan = getList("DWARF CLAN NAMES");
+        first = randomItem(
+          gender === "Male"
+            ? namesData[male] || []
+            : namesData[female] || []
+        );
+        last = randomItem(namesData[clan] || []);
         break;
-      case "Halfling":
-        first = randomItem(namesData["HALFLING NAMES MALE"].concat(namesData["HALFLING NAMES FEMALE"]));
-        last = randomItem(namesData["HALFLING SURNAMES"]);
+      }
+      case "Halfling": {
+        const male = getList("HALFLING NAMES MALE");
+        const female = getList("HALFLING NAMES FEMALE");
+        const sur = getList("HALFLING SURNAMES");
+        first = randomItem(
+          gender === "Male"
+            ? namesData[male] || []
+            : namesData[female] || []
+        );
+        last = randomItem(namesData[sur] || []);
         break;
-      case "Gnome":
-        first = randomItem(namesData["GNOME NAMES MALE"].concat(namesData["GNOME NAMES FEMALE"]));
-        last = randomItem(namesData["GNOME CLAN NAMES"]);
+      }
+      case "Human": {
+        const regionKey = getList(`${region}. ${gender}`);
+        const originKey = getList(`${origin}`);
+        first = randomItem(namesData[regionKey] || []);
+        last = randomItem(namesData[originKey] || []);
         break;
-      case "Dragonborn":
-        first = randomItem(namesData["DRAGONBORN NAMES MALE"].concat(namesData["DRAGONBORN NAMES FEMALE"]));
-        last = randomItem(namesData["DRAGONBORN CLAN NAMES"]);
-        break;
-      case "Half-Orc":
-        first = randomItem(namesData["HALF-ORC NAMES MALE"].concat(namesData["HALF-ORC NAMES FEMALE"]));
-        break;
-      case "Tiefling":
-        first = randomItem(namesData["TIEFLING NAMES MALE"].concat(namesData["TIEFLING NAMES FEMALE"]));
-        last = randomItem(namesData["TIEFLING VIRTUE NAMES"]);
-        break;
-      case "Goliath":
-        first = randomItem(namesData["GOLIATH NAMES BIRTH NAME"]);
-        last = randomItem(namesData["GOLIATH CLAN NAMES"]);
-        break;
-      case "Triton":
-        first = randomItem(namesData["TRITON NAMES MALE"].concat(namesData["TRITON NAMES FEMALE"]));
-        last = randomItem(namesData["TRITON SURNAME"]);
-        break;
-      case "Tortle":
-        first = randomItem(namesData["TORTLE NAMES NAME"]);
-        break;
-      default:
-        // Humans use region + origin
-        const regionKey = `${region}. ${gender}.`;
-        const originKey = `${origin}.`;
-        const firstList = namesData[regionKey] || [];
-        const lastList = namesData[originKey] || [];
-        first = randomItem(firstList);
-        last = randomItem(lastList);
-        break;
+      }
+      default: {
+        // fallback random across everything
+        const all = Object.values(namesData).flat();
+        first = randomItem(all);
+        last = randomItem(all);
+      }
     }
 
-    const full = [first, last].filter(Boolean).join(" ");
-    setGeneratedName(full);
+    if (!first) first = "Unknown";
+    setGeneratedName([first, last].filter(Boolean).join(" "));
   };
 
   const surpriseMe = () => {
@@ -179,8 +190,8 @@ export default function App() {
             value={region}
             onChange={(e) => setRegion(e.target.value)}
           >
-            {regions.map((reg) => (
-              <option key={reg}>{reg}</option>
+            {regions.map((r) => (
+              <option key={r}>{r}</option>
             ))}
           </select>
         </div>

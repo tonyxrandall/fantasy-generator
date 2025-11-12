@@ -1,151 +1,73 @@
-import React, { useEffect, useState } from "react";
+import React, { useState, useEffect } from "react";
 
 export default function App() {
-  const [race, setRace] = useState("Human");
-  const [gender, setGender] = useState("Male");
-  const [region, setRegion] = useState("Archaic");
-  const [origin, setOrigin] = useState("Woodsfolk");
+  const [allNames, setAllNames] = useState([]);
   const [generatedName, setGeneratedName] = useState("");
-  const [namesData, setNamesData] = useState(null);
+  const [race, setRace] = useState("Human");
+  const [gender, setGender] = useState("Any");
+  const [origin, setOrigin] = useState("Any");
 
   const races = [
     "Human",
     "Elf",
     "Dwarf",
     "Halfling",
+    "Tiefling",
     "Dragonborn",
     "Gnome",
     "Half-Orc",
-    "Tiefling",
+    "Goliath",
     "Triton",
     "Tortle",
-    "Goliath",
   ];
-  const regions = ["Archaic", "Westron", "Northish", "Southron"];
+  const genders = ["Male", "Female", "Any"];
   const origins = [
     "Woodsfolk",
     "Desertfolk",
     "Farmfolk",
-    "Priests",
-    "Soldiers",
-    "Swampfolk",
     "Townfolk",
     "Riverfolk",
-    "Seafolk",
+    "Soldiers",
+    "Priests",
+    "Wanderers",
   ];
-  const genders = ["Male", "Female"];
+
+  useEffect(() => {
+    // Load and parse all names (ignoring headers)
+    fetch("/names_extra.txt")
+      .then((res) => res.text())
+      .then((data) => {
+        const names = data
+          .split(/[\n,]+/)
+          .map((n) => n.trim())
+          .filter(
+            (n) =>
+              n &&
+              !n.match(/^[A-Z\s\-']+\.$/) && // ignore headers like "ELF NAMES MALE."
+              !n.startsWith("*") &&
+              n.length > 1
+          );
+        setAllNames(names);
+      });
+  }, []);
 
   const randomItem = (arr) => arr[Math.floor(Math.random() * arr.length)];
 
-  // Load file dynamically
-  useEffect(() => {
-    async function loadNames() {
-      try {
-        const res = await fetch("/names_extra.txt");
-        const text = await res.text();
-        const lines = text.split(/\r?\n/).map((l) => l.trim());
-        const parsed = {};
-        let currentKey = "";
-
-        for (const line of lines) {
-          if (!line) continue;
-
-          // Detect headers (lines with uppercase + punctuation)
-          if (/^[A-Z][A-Z\s\-`']+/.test(line)) {
-            currentKey = line.replace(/[:.]/g, "").trim();
-            parsed[currentKey] = [];
-          } else if (currentKey) {
-            // Split comma-separated lists
-            const names = line.split(/[,;]/).map((n) => n.trim());
-            parsed[currentKey].push(...names.filter(Boolean));
-          }
-        }
-
-        console.log("✅ Loaded name categories:", Object.keys(parsed));
-        setNamesData(parsed);
-      } catch (e) {
-        console.error("Error loading names_extra.txt", e);
-      }
-    }
-
-    loadNames();
-  }, []);
-
   const generateName = () => {
-    if (!namesData) {
-      setGeneratedName("Loading name data...");
-      return;
-    }
+    if (!allNames.length) return;
+    const first = randomItem(allNames);
+    let last = randomItem(allNames);
 
-    let first = "";
-    let last = "";
+    // Avoid identical first/last
+    while (last === first) last = randomItem(allNames);
 
-    // === Race-specific logic ===
-    const getList = (key) =>
-      Object.keys(namesData).find(
-        (k) => k.toLowerCase().includes(key.toLowerCase())
-      );
-
-    switch (race) {
-      case "Elf": {
-        const male = getList("ELF NAMES MALE");
-        const female = getList("ELF NAMES FEMALE");
-        const family = getList("ELF FAMILY NAMES");
-        first = randomItem(
-          gender === "Male"
-            ? namesData[male] || []
-            : namesData[female] || []
-        );
-        last = randomItem(namesData[family] || []);
-        break;
-      }
-      case "Dwarf": {
-        const male = getList("DWARF NAMES MALE");
-        const female = getList("DWARF NAMES FEMALE");
-        const clan = getList("DWARF CLAN NAMES");
-        first = randomItem(
-          gender === "Male"
-            ? namesData[male] || []
-            : namesData[female] || []
-        );
-        last = randomItem(namesData[clan] || []);
-        break;
-      }
-      case "Halfling": {
-        const male = getList("HALFLING NAMES MALE");
-        const female = getList("HALFLING NAMES FEMALE");
-        const sur = getList("HALFLING SURNAMES");
-        first = randomItem(
-          gender === "Male"
-            ? namesData[male] || []
-            : namesData[female] || []
-        );
-        last = randomItem(namesData[sur] || []);
-        break;
-      }
-      case "Human": {
-        const regionKey = getList(`${region}. ${gender}`);
-        const originKey = getList(`${origin}`);
-        first = randomItem(namesData[regionKey] || []);
-        last = randomItem(namesData[originKey] || []);
-        break;
-      }
-      default: {
-        // fallback random across everything
-        const all = Object.values(namesData).flat();
-        first = randomItem(all);
-        last = randomItem(all);
-      }
-    }
-
-    if (!first) first = "Unknown";
-    setGeneratedName([first, last].filter(Boolean).join(" "));
+    const name = `${first} ${last}`;
+    setGeneratedName(name);
   };
 
   const surpriseMe = () => {
     setRace(randomItem(races));
     setGender(randomItem(genders));
-    setRegion(randomItem(regions));
     setOrigin(randomItem(origins));
     generateName();
   };
@@ -153,10 +75,10 @@ export default function App() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-900 to-indigo-950 text-white flex flex-col items-center py-10 px-4">
       <h1 className="text-4xl font-bold mb-8 text-indigo-300">
-        🧙‍♂️ Ultimate D&D Name Generator
+        ⚔️ Ultimate D&D Name Generator
       </h1>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8 w-full max-w-4xl">
+      <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-4 gap-4 mb-8 w-full max-w-4xl">
         <div>
           <label className="block mb-1 text-sm text-gray-300">Race</label>
           <select
@@ -179,19 +101,6 @@ export default function App() {
           >
             {genders.map((g) => (
               <option key={g}>{g}</option>
-            ))}
-          </select>
-        </div>
-
-        <div>
-          <label className="block mb-1 text-sm text-gray-300">Region</label>
-          <select
-            className="w-full p-2 rounded bg-slate-800 border border-slate-700"
-            value={region}
-            onChange={(e) => setRegion(e.target.value)}
-          >
-            {regions.map((r) => (
-              <option key={r}>{r}</option>
             ))}
           </select>
         </div>
@@ -226,16 +135,20 @@ export default function App() {
       </div>
 
       {generatedName && (
-        <div className="bg-slate-800 border border-slate-700 rounded-xl px-6 py-4 text-center shadow-lg">
+        <div className="bg-slate-800 border border-slate-700 rounded-xl px-6 py-4 text-center shadow-lg w-full max-w-lg">
           <h2 className="text-3xl font-bold text-amber-300">{generatedName}</h2>
           <p className="text-sm mt-2 text-gray-400">
-            {gender} {race} — {region} / {origin}
+            {gender} {race} of the {origin}
           </p>
         </div>
       )}
 
+      {!allNames.length && (
+        <p className="mt-10 text-gray-400 italic">Loading names...</p>
+      )}
+
       <footer className="mt-12 text-xs text-slate-500">
-        © {new Date().getFullYear()} D&D Name Generator — built with ⚡React
+        © {new Date().getFullYear()} D&D Name Generator — built with ⚡ React
       </footer>
     </div>
   );

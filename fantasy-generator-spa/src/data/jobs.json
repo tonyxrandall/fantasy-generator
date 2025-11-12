@@ -1,0 +1,206 @@
+{
+  "Academic": [
+    "advocate",
+    "astrologer",
+    "cartographer",
+    "judge",
+    "scholar",
+    "scribe",
+    "student",
+    "writer"
+  ],
+  "Adventurer": [
+    "barbarian",
+    "bard",
+    "cleric",
+    "druid",
+    "fighter",
+    "monk",
+    "paladin",
+    "ranger",
+    "rogue",
+    "sorcerer",
+    "warlock",
+    "wizard"
+  ],
+  "Aristocrat": [
+    "duke",
+    "marquess",
+    "count",
+    "viscount",
+    "baron",
+    "greatchief",
+    "warchief",
+    "chief",
+    "elder"
+  ],
+  "Builder": [
+    "architect",
+    "bricklayer",
+    "carpenter",
+    "mason",
+    "plasterer",
+    "roofer"
+  ],
+  "Clergy": [
+    "acolyte",
+    "priest",
+    "shaman"
+  ],
+  "Craftsperson": [
+    "alchemist",
+    "armorer",
+    "baker",
+    "basket weaver",
+    "blacksmith",
+    "bookbinder",
+    "bowyer",
+    "brewer",
+    "butcher",
+    "chandler",
+    "cobbler",
+    "cook",
+    "cooper",
+    "dyer",
+    "engraver",
+    "fuller",
+    "furniture maker",
+    "furrier",
+    "glass blower",
+    "goldsmith",
+    "instrument maker",
+    "inventor",
+    "jeweler",
+    "leatherworker",
+    "locksmith",
+    "painter",
+    "paper maker",
+    "potion brewer",
+    "potter",
+    "rope maker",
+    "rug maker",
+    "sculptor",
+    "ship builder",
+    "silversmith",
+    "skinner",
+    "soapmaker",
+    "tailor",
+    "tanner",
+    "tinker",
+    "toymaker",
+    "weaponsmith",
+    "weaver",
+    "wheelwright",
+    "woodcarver"
+  ],
+  "Criminal": [
+    "bandit",
+    "burglar",
+    "pickpocket",
+    "pirate",
+    "raider"
+  ],
+  "Entertainer": [
+    "acrobat",
+    "bather",
+    "jester",
+    "minstrel",
+    "prostitute",
+    "storyteller"
+  ],
+  "Farmer": [
+    "crop farmer",
+    "gatherer",
+    "herder"
+  ],
+  "Financier": [
+    "banker",
+    "moneychanger",
+    "pawnbroker",
+    "tax collector"
+  ],
+  "Healer": [
+    "healer",
+    "herbalist",
+    "midwife"
+  ],
+  "Hosteler": [
+    "brothel keeper",
+    "innkeeper",
+    "restaurantier",
+    "tavern keeper"
+  ],
+  "Laborer": [
+    "day laborer",
+    "miner",
+    "porter"
+  ],
+  "Merchant": [
+    "beer merchant",
+    "bookseller",
+    "caravanner",
+    "dairy seller",
+    "fishmonger",
+    "florist",
+    "grain merchant",
+    "grocer",
+    "haberdasher",
+    "hay merchant",
+    "livestock merchant",
+    "mercer",
+    "military outfitter",
+    "miller",
+    "peddler",
+    "slaver",
+    "spice merchant",
+    "tobacco merchant",
+    "used clothier",
+    "warehouser",
+    "wine merchant",
+    "woodseller",
+    "wool merchant"
+  ],
+  "Military": [
+    "bounty hunter",
+    "city guard",
+    "private guard",
+    "mercenary",
+    "soldier",
+    "village guard"
+  ],
+  "Outdoor": [
+    "explorer",
+    "fisher",
+    "hunter",
+    "sailor",
+    "trapper",
+    "traveler"
+  ],
+  "Public servant": [
+    "diplomat",
+    "official",
+    "politician",
+    "town crier"
+  ],
+  "Servant": [
+    "barber",
+    "carriage driver",
+    "domestic servant",
+    "gardener",
+    "groom",
+    "guide",
+    "inn server",
+    "launderer",
+    "page",
+    "rat catcher",
+    "restaurant server",
+    "slave",
+    "tavern server",
+    "tout"
+  ],
+  "Unemployed": [
+    "beggar",
+    "child",
+    "housespouse"
+  ]
+}
